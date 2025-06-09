@@ -47,7 +47,7 @@ const Home = () => {
         });
       }
     } catch (error) {
-      console.log(error);
+      toast.error("error in adding note");
     }
   };
 
@@ -62,7 +62,7 @@ const Home = () => {
         }
       }
     } catch (error) {
-      console.log(error);
+      toast.error("error in deleting notes");
     }
   };
   return (

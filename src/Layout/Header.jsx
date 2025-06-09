@@ -6,7 +6,8 @@ import { CiLight } from "react-icons/ci";
 import { MdDarkMode } from "react-icons/md";
 
 const Header = () => {
-  const { token, setToken, darkmode, setdarkMode } = useContext(UserContext);
+  const { token, setToken, darkmode, setdarkMode, setNotes } =
+    useContext(UserContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -14,7 +15,17 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setToken("");
+    setNotes([]); // ✅ Clear notes immediately on logout
   };
+
+  const handleModeChange = () => {
+    setdarkMode((prev) => {
+      const newMode = !prev;
+      localStorage.setItem("mode", newMode.toString()); // saves "true" or "false"
+      return newMode;
+    });
+  };
+
   return (
     <header
       className={
@@ -29,7 +40,7 @@ const Header = () => {
           iNotebook
         </NavLink>
 
-        {/* Desktop Links */}
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-6 text-sm font-medium">
           <NavLink
             to="/"
@@ -68,21 +79,18 @@ const Header = () => {
             </>
           ) : (
             <button
-              className="text-red-50 cursor-pointer"
               onClick={handleLogout}
+              className="text-red-50 cursor-pointer"
             >
               Logout
             </button>
           )}
-          <button
-            className="cursor-pointer "
-            onClick={() => setdarkMode(!darkmode)}
-          >
+          <button className="cursor-pointer" onClick={() => handleModeChange()}>
             {darkmode ? <CiLight /> : <MdDarkMode />}
           </button>
         </nav>
 
-        {/* Hamburger for Mobile */}
+        {/* Mobile Hamburger */}
         <div className="md:hidden">
           <button onClick={toggleMenu}>
             {menuOpen ? (
@@ -94,8 +102,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-
+      {/* Mobile Menu Items */}
       {menuOpen && (
         <div className="md:hidden px-4 pb-4 space-y-2 bg-blue-500 text-white text-sm font-medium">
           <NavLink
@@ -144,9 +151,7 @@ const Header = () => {
 
           <button
             className="mt-2 flex items-center gap-2 hover:text-blue-100"
-            onClick={() => {
-              setdarkMode(!darkmode);
-            }}
+            onClick={() => handleModeChange()}
           >
             {darkmode ? <CiLight /> : <MdDarkMode />}
           </button>

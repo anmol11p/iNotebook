@@ -7,45 +7,51 @@ const UserProvider = ({ children }) => {
   const [token, setToken] = useState("");
   const [notes, setNotes] = useState([]);
   const [darkmode, setdarkMode] = useState(false);
-  // Check if token is expired
+
   const isTokenExpired = (token) => {
     if (!token) return true;
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
-
-      const currentTime = Date.now() / 1000; // in seconds
+      const currentTime = Date.now() / 1000;
       return payload.exp < currentTime;
     } catch (err) {
-      return true; // invalid token
+      return true;
     }
   };
 
-  // Load and validate token on mount
+  useEffect(() => {
+    const savedMode = localStorage.getItem("mode");
+    if (savedMode !== null) {
+      setdarkMode(savedMode === "true");
+    }
+  }, []);
+
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
-
     if (savedToken) {
       if (isTokenExpired(savedToken)) {
         localStorage.removeItem("token");
-        setToken(""); // clear expired token from state
+        setToken("");
       } else {
         setToken(savedToken);
       }
     }
   }, []);
 
-  // Fetch notes when valid token is set
   useEffect(() => {
+    const controller = new AbortController();
     const fetchNotes = async () => {
-      if (!token) return;
-
-      const resp = await viewAllnote(token);
-      if (resp.status === 200) {
-        setNotes(resp.data.notes);
+      try {
+        const resp = await viewAllnote(token);
+        if (resp.status === 200) {
+          setNotes(resp.data.notes);
+        }
+      } catch (err) {
+        if (e.name !== "AbortError") setNotes([]);
       }
     };
-
-    fetchNotes();
+    if (token) fetchNotes();
+    return () => controller.abort();
   }, [token]);
 
   return (

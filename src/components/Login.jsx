@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { UserContext } from "../context/UserProvider";
 import { userLogin } from "../api/user";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -9,12 +15,12 @@ const Login = () => {
   const { token, setToken, darkmode } = useContext(UserContext);
   const [Loader, setLoader] = useState(false);
   const Navigate = useNavigate();
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setLoader(true);
     try {
@@ -25,21 +31,28 @@ const Login = () => {
         toast.success(resp.data.message);
         Navigate("/");
       } else if (resp.status === 404) {
-        toast.error(resp.response.data.message);
+        toast.error(resp?.response?.data?.message);
+      } else if (resp.status === 400) {
+        const details = resp.data?.extraDetails;
+        if (Array.isArray(details)) {
+          details.forEach((item) => toast.error(item));
+        }
       }
     } catch (error) {
-      console.log(error);
       toast.error("Login failed!");
     } finally {
       setLoader(false);
     }
-  };
+  });
 
   useEffect(() => {
     if (token) {
       Navigate("/");
     }
   }, [token, Navigate]);
+  const inputStyle =
+    "w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none transition";
+
   return (
     <div
       className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${
@@ -71,7 +84,9 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className={`mt-1 ${
+                darkmode ? "text-white" : "text-black"
+              } ${inputStyle}`}
             />
           </div>
           <div>
@@ -90,7 +105,9 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className={`mt-1 ${
+                darkmode ? "text-white" : "text-black"
+              } ${inputStyle}`}
             />
           </div>
           <button
@@ -117,4 +134,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default memo(Login);

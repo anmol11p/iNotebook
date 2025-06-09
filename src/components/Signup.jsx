@@ -1,11 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { userRegister } from "../api/user";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/UserProvider";
 import { NavLink, useNavigate } from "react-router-dom";
 import { FaDartLang } from "react-icons/fa6";
 
-const Signup = () => {
+const Signup = memo(() => {
   const { token, setToken, darkmode } = useContext(UserContext);
   const [Loader, setLoader] = useState(false);
   const [formData, setFormData] = useState({
@@ -15,11 +21,11 @@ const Signup = () => {
     confirmPassword: "",
   });
   const Navigate = useNavigate();
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
@@ -35,21 +41,29 @@ const Signup = () => {
         toast.success(resp.data.message);
         Navigate("/");
       } else if (resp.status === 400) {
-        toast.error(resp?.response?.data?.message);
+        if (Array.isArray(resp.response.data.extraDetails)) {
+          resp.response.data.extraDetails.map((item) => {
+            toast.error(item);
+          });
+        } else {
+          toast.error(resp?.response?.data?.message);
+        }
       }
     } catch (error) {
-      console.log(error);
       toast.error("Something went wrong!");
     } finally {
       setLoader(false);
     }
-  };
+  });
 
   useEffect(() => {
     if (token) {
       Navigate("/");
     }
   }, [token, Navigate]);
+  const inputStyle =
+    "mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none transition";
+
   return (
     <div
       className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${
@@ -62,7 +76,7 @@ const Signup = () => {
         }  shadow-lg rounded-xl p-8`}
       >
         <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
-          Create Your iNotebook Account
+          Create Account
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -81,7 +95,7 @@ const Signup = () => {
               required
               value={formData.name}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className={inputStyle}
             />
           </div>
 
@@ -101,7 +115,7 @@ const Signup = () => {
               required
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className={inputStyle}
             />
           </div>
 
@@ -121,7 +135,7 @@ const Signup = () => {
               required
               value={formData.password}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className={inputStyle}
             />
           </div>
 
@@ -141,7 +155,7 @@ const Signup = () => {
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className={inputStyle}
             />
           </div>
 
@@ -168,7 +182,6 @@ const Signup = () => {
       </div>
     </div>
   );
-};
+});
 
-// anmol
 export default Signup;
