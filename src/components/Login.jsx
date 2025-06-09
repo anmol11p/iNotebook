@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserProvider";
 import { userLogin } from "../api/user";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const { token, setToken, darkmode } = useContext(UserContext);
+  const [Loader, setLoader] = useState(false);
   const Navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -15,6 +16,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoader(true);
     try {
       const resp = await userLogin(formData);
       if (resp.status === 201) {
@@ -22,12 +24,14 @@ const Login = () => {
         setToken(resp.data.token);
         toast.success(resp.data.message);
         Navigate("/");
-      }
-      if (resp.status === 404) {
+      } else if (resp.status === 404) {
         toast.error(resp.response.data.message);
       }
     } catch (error) {
       console.log(error);
+      toast.error("Login failed!");
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -56,7 +60,7 @@ const Login = () => {
               htmlFor="email"
               className={` ${
                 darkmode ? "text-white" : "text-gray-700"
-              }block text-sm font-medium `}
+              } block text-sm font-medium `}
             >
               Email address
             </label>
@@ -75,7 +79,7 @@ const Login = () => {
               htmlFor="password"
               className={` ${
                 darkmode ? "text-white" : "text-gray-700"
-              }block text-sm font-medium `}
+              } block text-sm font-medium `}
             >
               Password
             </label>
@@ -91,16 +95,22 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full cursor-pointer bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            disabled={Loader}
+            className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition ${
+              Loader ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Login
+            {Loader && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {Loader ? "Processing..." : "Login"}
           </button>
         </form>
         <p className="text-center text-sm text-gray-500 mt-4">
           Don’t have an account?{" "}
-          <a href="/signup" className="text-blue-600 hover:underline">
+          <NavLink to="/signup" className="text-blue-600 hover:underline">
             Sign up
-          </a>
+          </NavLink>
         </p>
       </div>
     </div>

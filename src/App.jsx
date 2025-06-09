@@ -7,7 +7,7 @@ import Login from "./components/Login";
 import Home from "./components/Home";
 import About from "./components/About";
 function App() {
-  const router = createHashRouter([
+  const Router = createHashRouter([
     {
       path: "/",
       element: <AppLayout />,
@@ -25,7 +25,7 @@ function App() {
   ]);
   return (
     <>
-      <RouterProvider router={router}></RouterProvider>
+      <RouterProvider router={Router}></RouterProvider>
     </>
   );
 }

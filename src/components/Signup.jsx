@@ -2,11 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { userRegister } from "../api/user";
 import { toast } from "react-toastify";
 import { UserContext } from "../context/UserProvider";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaDartLang } from "react-icons/fa6";
 
 const Signup = () => {
   const { token, setToken, darkmode } = useContext(UserContext);
+  const [Loader, setLoader] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,19 +25,23 @@ const Signup = () => {
       toast.error("Passwords do not match!");
       return;
     }
+
+    setLoader(true);
     try {
       const resp = await userRegister(formData);
       if (resp.status === 201) {
         localStorage.setItem("token", resp.data.token);
-        setToken(localStorage.getItem("token"));
+        setToken(resp.data.token);
         toast.success(resp.data.message);
         Navigate("/");
-      }
-      if (resp.status === 400) {
+      } else if (resp.status === 400) {
         toast.error(resp?.response?.data?.message);
       }
     } catch (error) {
       console.log(error);
+      toast.error("Something went wrong!");
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -142,17 +147,23 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full cursor-pointer bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            disabled={Loader}
+            className={`w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition ${
+              Loader ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Sign Up
+            {Loader && (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            )}
+            {Loader ? "Processing..." : "Sign Up"} {/* Or "Login" */}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-4">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
+          <NavLink to="/login" className="text-blue-600 hover:underline">
             Login
-          </a>
+          </NavLink>
         </p>
       </div>
     </div>
