@@ -14,12 +14,12 @@ function App() {
       errorElement: <ErrorPage />,
       children: [
         {
-          path: "/",
+          path: "",
           element: <Home />,
         },
-        { path: "/login", element: <Login /> },
-        { path: "/signup", element: <SignUp /> },
-        { path: "/about", element: <About /> },
+        { path: "login", element: <Login /> },
+        { path: "signup", element: <SignUp /> },
+        { path: "about", element: <About /> },
       ],
     },
   ]);
